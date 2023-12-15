@@ -9,8 +9,7 @@ load_dotenv()
 
 ELEVANLABS_API_KEY = environ["ELEVANLABS_API_KEY"]
 
-# santa knrPHWnBmmDHMoiMeP3l
-def tts(text: str, voice_id: str = "knrPHWnBmmDHMoiMeP3l"):
+def tts(text: str, voice_id: str = "knrPHWnBmmDHMoiMeP3l"): # santa
     audio = generate(
         text=text,
         voice=voice_id,
