@@ -2,8 +2,10 @@ import gradio as gr
 import os
 import time
 from utils.core import chat
+import speech_recognition as sr
 
-# Chatbot demo with multimodal input (text, markdown, LaTeX, code blocks, image, audio, & video). Plus shows support for streaming text.
+
+r = sr.Recognizer()
 
 
 def print_like_dislike(x: gr.LikeData):
@@ -15,9 +17,11 @@ def add_text(history, text):
     return history, gr.Textbox(value="", interactive=False)
 
 
-def add_file(history, file):
-    history = history + [((file.name,), None)]
-    return history
+def get_chatbot_response(filePath):
+    print("filePath", filePath)
+    file = sr.AudioFile(filePath)
+    response = r.recognize_whisper(file)
+    return [((filePath + ".wav",), response)]
 
 
 def bot(history):
@@ -35,7 +39,10 @@ with gr.Blocks() as demo:
         [],
         elem_id="chatbot",
         bubble_full_width=False,
-        avatar_images=(None, (os.path.join(os.path.dirname(__file__), "./data/images/avatar.png"))),
+        avatar_images=(
+            None,
+            (os.path.join(os.path.dirname(__file__), "./data/images/avatar.png")),
+        ),
     )
 
     with gr.Row():
@@ -45,15 +52,13 @@ with gr.Blocks() as demo:
             placeholder="Enter text and press enter, or upload an image",
             container=False,
         )
-        btn = gr.UploadButton("📁", file_types=["image", "video", "audio"])
 
     txt_msg = txt.submit(add_text, [chatbot, txt], [chatbot, txt], queue=False).then(
         bot, chatbot, chatbot, api_name="bot_response"
     )
     txt_msg.then(lambda: gr.Textbox(interactive=True), None, [txt], queue=False)
-    file_msg = btn.upload(add_file, [chatbot, btn], [chatbot], queue=False).then(
-        bot, chatbot, chatbot
-    )
+    mic = gr.Audio(sources=["microphone"], type="filepath")
+    mic.change(get_chatbot_response, mic, chatbot)
 
     chatbot.like(print_like_dislike, None, None)
 
@@ -62,6 +67,6 @@ if __name__ == "__main__":
     demo.launch(
         share=False,
         debug=True,
-        server_name="0.0.0.0",
+        # server_name="0.0.0.0",
         server_port=8000,
     )
