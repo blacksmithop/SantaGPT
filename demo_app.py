@@ -9,15 +9,14 @@ load_dotenv()
 
 ELEVANLABS_API_KEY = environ["ELEVANLABS_API_KEY"]
 
-# santa knrPHWnBmmDHMoiMeP3l
-def tts(text: str, voice_id: str = "knrPHWnBmmDHMoiMeP3l"):
+def tts(text: str, voice_id: str = "knrPHWnBmmDHMoiMeP3l"): # santa
     audio = generate(
         text=text,
         voice=voice_id,
         model="eleven_multilingual_v1",
         api_key=ELEVANLABS_API_KEY,
     )
-    audioFilePath = "./data/audio.mp3"
+    audioFilePath = "./data/audio/audio.mp3"
 
     save(audio, filename=audioFilePath)
     playsound(audioFilePath)

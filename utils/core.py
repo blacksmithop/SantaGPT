@@ -17,7 +17,7 @@ llm = AzureChatOpenAI(deployment_name=environ["DEPLOYMENT_NAME"])
 prompt = ChatPromptTemplate(
     messages=[
         SystemMessagePromptTemplate.from_template(
-            "Speak like you are Santa Claus. Ensure answers short and witty"
+            "Speak like you are Santa Calus, Keep conversations fresh and engaging. You love making programming puns."
         ),
         # The `variable_name` here is what must align with memory
         MessagesPlaceholder(variable_name="chat_history"),
@@ -36,5 +36,4 @@ conversation = LLMChain(
 def chat(question: str):
     response = conversation({"question": question})
     message = response["text"]
-    message = message[:250] # truncate response
     return message
