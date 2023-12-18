@@ -1,26 +1,67 @@
 import gradio as gr
+import os
+import time
+from utils.core import chat
 
-css = """
-.user {
-    background-color: slategrey;
-}
-"""
+# Chatbot demo with multimodal input (text, markdown, LaTeX, code blocks, image, audio, & video). Plus shows support for streaming text.
 
-def AskBot(question):
-    return question.upper()
 
-with gr.Blocks(css=css) as demo:
-    chatbot = gr.Chatbot()
-    msg = gr.Textbox()
-    clear = gr.ClearButton([msg, chatbot])
+def print_like_dislike(x: gr.LikeData):
+    print(x.index, x.value, x.liked)
 
-    def respond(message, chat_history):
-        bot_message = AskBot(question=message)
-        chat_history.append((message, bot_message))
-        return "", chat_history
 
-    msg.submit(respond, [msg, chatbot], [msg, chatbot])
+def add_text(history, text):
+    history = history + [(text, None)]
+    return history, gr.Textbox(value="", interactive=False)
+
+
+def add_file(history, file):
+    history = history + [((file.name,), None)]
+    return history
+
+
+def bot(history):
+    question = history[-1][0]
+    response = chat(question=question)
+    history[-1][1] = ""
+    for character in response:
+        history[-1][1] += character
+        time.sleep(0.05)
+        yield history
+
+
+with gr.Blocks() as demo:
+    chatbot = gr.Chatbot(
+        [],
+        elem_id="chatbot",
+        bubble_full_width=False,
+        avatar_images=(None, (os.path.join(os.path.dirname(__file__), "./data/images/avatar.png"))),
+    )
+
+    with gr.Row():
+        txt = gr.Textbox(
+            scale=4,
+            show_label=False,
+            placeholder="Enter text and press enter, or upload an image",
+            container=False,
+        )
+        btn = gr.UploadButton("📁", file_types=["image", "video", "audio"])
+
+    txt_msg = txt.submit(add_text, [chatbot, txt], [chatbot, txt], queue=False).then(
+        bot, chatbot, chatbot, api_name="bot_response"
+    )
+    txt_msg.then(lambda: gr.Textbox(interactive=True), None, [txt], queue=False)
+    file_msg = btn.upload(add_file, [chatbot, btn], [chatbot], queue=False).then(
+        bot, chatbot, chatbot
+    )
+
+    chatbot.like(print_like_dislike, None, None)
+
 
 if __name__ == "__main__":
-    demo.launch()
-
+    demo.launch(
+        share=False,
+        debug=True,
+        server_name="0.0.0.0",
+        server_port=8000,
+    )
