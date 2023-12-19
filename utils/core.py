@@ -13,11 +13,12 @@ from langchain.prompts import (
 load_dotenv()
 
 llm = AzureChatOpenAI(deployment_name=environ["DEPLOYMENT_NAME"])
+llm.max_tokens = 200
 
 prompt = ChatPromptTemplate(
     messages=[
         SystemMessagePromptTemplate.from_template(
-            "Speak like you are Santa Calus, Keep conversations fresh and engaging. You love making programming puns."
+            "Act like you're Santa Claus. Answer in 1-5 sentences"
         ),
         # The `variable_name` here is what must align with memory
         MessagesPlaceholder(variable_name="chat_history"),
