@@ -32,14 +32,13 @@ while True:
         # audio = r.adjust_for_ambient_noise(source)
         audio = r.listen(source)
         
-        transcript = r.recognize_whisper(audio)
+        transcript = r.recognize_whisper(audio, language="english")
         if transcript == "bye":
             exit(0)
             
-        print("Thinking 🤔")
         print(f"😃: {transcript}")
+        print("Thinking 🤔")
         response = chat(question=transcript)
-        
         print("Speaking 🔊")
         print(f"😺: {response}")
         tts(text=response)
