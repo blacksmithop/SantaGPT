@@ -6,20 +6,22 @@ from dotenv import load_dotenv
 from os import environ
 from pygame import mixer
 from playsound import playsound
+from itertools import cycle
 
 load_dotenv()
 
 mixer.init()
 mixer.music.load('./data/audio/wait.mp3')
 
-ELEVANLABS_API_KEY = environ["ELEVANLABS_API_KEY"]
+API_KEYS = [f"{environ['ELEVANLABS_API_KEY'+i]}" for i in range(1, 6)]
+pool = cycle(API_KEYS)
 
 def tts(text: str, voice_id: str = "knrPHWnBmmDHMoiMeP3l"): # santa
     audio = generate(
         text=text,
         voice=voice_id,
         model="eleven_multilingual_v1",
-        api_key=ELEVANLABS_API_KEY,
+        api_key=next(pool),
     )
     audioFilePath = "./data/audio/audio.mp3"
 
@@ -42,11 +44,13 @@ while True:
         print(f"😃: {transcript}")
         if "hey" in transcript.lower():
             while True:
+                playsound("./data/audio/jingle_bells.mp3")
                 mixer.music.stop()
                 print("Listening 🎙️")
                 audio = r.listen(source)
                 transcript = r.recognize_whisper(audio, language="english")
                 if "bye" in transcript.lower(): 
+                    playsound("./data/audio/bye.mp3")
                     break
                 if transcript != "":
                     mixer.music.stop()
