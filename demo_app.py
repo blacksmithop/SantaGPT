@@ -4,8 +4,13 @@ import speech_recognition as sr
 from utils.core import chat
 from dotenv import load_dotenv
 from os import environ
+from pygame import mixer
+from playsound import playsound
 
 load_dotenv()
+
+mixer.init()
+mixer.music.load('./data/audio/wait.mp3')
 
 ELEVANLABS_API_KEY = environ["ELEVANLABS_API_KEY"]
 
@@ -24,21 +29,31 @@ def tts(text: str, voice_id: str = "knrPHWnBmmDHMoiMeP3l"): # santa
 
 r = sr.Recognizer()
 r.pause_threshold = 0.7  # pause threshold
-
+mixer.music.play()
 
 while True:
     with sr.Microphone(device_index=1) as source:
-        print("Listening 🎙️")
+        # mixer.music.stop()
+        print("Listening for Hey 🎙️")
         # audio = r.adjust_for_ambient_noise(source)
         audio = r.listen(source)
-        
+        # mixer.music.play()
         transcript = r.recognize_whisper(audio, language="english")
-        if transcript == "bye":
-            exit(0)
-            
         print(f"😃: {transcript}")
-        print("Thinking 🤔")
-        response = chat(question=transcript)
-        print("Speaking 🔊")
-        print(f"😺: {response}")
-        tts(text=response)
+        if "hey" in transcript.lower():
+            while True:
+                mixer.music.stop()
+                print("Listening 🎙️")
+                audio = r.listen(source)
+                transcript = r.recognize_whisper(audio, language="english")
+                if "bye" in transcript.lower(): 
+                    break
+                if transcript != "":
+                    mixer.music.stop()
+                    print("Thinking 🤔")
+                    response = chat(question=transcript)
+                    print("Speaking 🔊")
+                    print(f"😺: {response}")
+                    tts(text=response)
+        mixer.music.play()
+                
